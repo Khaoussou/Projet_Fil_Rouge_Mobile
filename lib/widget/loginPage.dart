@@ -1,8 +1,12 @@
 import 'dart:convert';
+import 'dart:ffi';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:flutter/material.dart';
+import 'package:gestion_school_odc/home/homePage.dart';
 import 'package:gestion_school_odc/register/api.dart';
+
+import '../model/user.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -12,25 +16,51 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  bool isConnected = false;
+
+  @override
+  void initState()  {
+    storage.read(key: 'user').then((userJson) {
+      if (userJson != null) {
+        User user = User.fromJson(jsonDecode(userJson));
+        Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => HomePage(user: user)));
+      }
+    });
+    super.initState();
+  }
+
   TextEditingController loginController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   final storage = const FlutterSecureStorage();
-  Future<dynamic> _register() async {
+
+  Future<User?> _register() async {
     var data = {
       'username': loginController.text,
       'password': passwordController.text
     };
-    var response = await Api().postData(data, 'login');
+    var response = await Api().login(data, 'login');
 
     var bodyString = response.body;
     var body = jsonDecode(bodyString);
 
     if (body.containsKey('token')) {
-      String token = body['token'];
-      await storage.write(key: 'token', value: token);
+      User user = User(
+          token: body['token'],
+          telephone: body['telephone'],
+          nom: body['nom'],
+          role: body['role'],
+          id: body['user_id']);
+      await storage.write(key: 'user', value: jsonEncode(user));
+      return user;
     } else {
-      return 'bap';
+      return null;
     }
+  }
+
+  _logout() async {
+    isConnected = false;
+    await Api().logout('logout');
   }
 
   @override
@@ -66,7 +96,7 @@ class _LoginPageState extends State<LoginPage> {
                         width: 300,
                         decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20)),
-                        child: TextFormField(
+                        child: TextField(
                           cursorColor: const Color(0XFF000000),
                           controller: loginController,
                           decoration: InputDecoration(
@@ -132,6 +162,9 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ],
             ),
+            const SizedBox(
+              height: 30,
+            ),
             Column(
               children: [
                 Container(
@@ -141,8 +174,35 @@ class _LoginPageState extends State<LoginPage> {
                   height: 60,
                   width: 300,
                   child: ElevatedButton(
-                    onPressed: () {
-                      _register().then((value) => print(value));
+                    onPressed: () async {
+                      User? result = await _register();
+                      if (result != null) {
+                        if (result.role == "Etudiant") {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => HomePage(user: result)));
+                          ScaffoldMessenger.of(context)
+                            ..removeCurrentSnackBar()
+                            ..showSnackBar(const SnackBar(
+                                backgroundColor: Colors.green,
+                                content: Text("Connexion réussie !")));
+                        } else {
+                          ScaffoldMessenger.of(context)
+                            ..removeCurrentSnackBar()
+                            ..showSnackBar(const SnackBar(
+                              backgroundColor: Colors.red,
+                              content: Text("Vous n'êtes pas un étudiant"),
+                            ));
+                          _logout();
+                          storage.delete(key: 'user');
+                        }
+                      } else {
+                        ScaffoldMessenger.of(context)
+                          ..removeCurrentSnackBar()
+                          ..showSnackBar(const SnackBar(
+                              backgroundColor: Colors.red,
+                              content:
+                                  Text("Login ou mot de passe incorrect !")));
+                      }
                     },
                     style: ButtonStyle(
                       foregroundColor: MaterialStateProperty.all(Colors.white),
