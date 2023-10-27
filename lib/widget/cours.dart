@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:gestion_school_odc/model/user.dart';
 import 'package:gestion_school_odc/register/api.dart';
+import 'package:gestion_school_odc/widget/sessionCalendar.dart';
 
 import '../model/cours.dart';
 
@@ -21,11 +22,12 @@ class _CoursState extends State<CoursPage> {
 
   @override
   final storage = const FlutterSecureStorage();
+  late final User user;
   CoursResponse? _cours;
 
   _initData() async {
-    User user = await Api().getUserConnect();
-    Api().getData("courUsers", user.id).then((response) {
+    user = await Api().getUserConnect();
+    Api().getUserCours("courUsers", user.id).then((response) {
       setState(() {
         _cours = response;
       });
@@ -56,6 +58,7 @@ class _CoursState extends State<CoursPage> {
             SingleChildScrollView(
               child: Column(
                 children: _cours!.data.cours.map((cours) {
+                  String image = cours.photo;
                   return Container(
                     padding: const EdgeInsets.all(5),
                     width: double.infinity,
@@ -70,9 +73,8 @@ class _CoursState extends State<CoursPage> {
                           decoration: BoxDecoration(
                               color: Colors.cyan,
                               borderRadius: BorderRadius.circular(20),
-                              image: const DecorationImage(
-                                  image:
-                                      AssetImage('assets/images/angular.png'),
+                              image: DecorationImage(
+                                  image: NetworkImage(image),
                                   fit: BoxFit.cover)),
                         ),
                         const SizedBox(
@@ -102,7 +104,7 @@ class _CoursState extends State<CoursPage> {
                                 Row(
                                   children: [
                                     Text(
-                                      cours.coursDetails[0].nbrHeure + ' h',
+                                      '${cours.coursDetails[0].nbrHeure} h',
                                       style: const TextStyle(
                                         fontSize: 18,
                                       ),
@@ -111,8 +113,16 @@ class _CoursState extends State<CoursPage> {
                                       width: 100,
                                     ),
                                     IconButton(
-                                        onPressed: () {},
-                                        icon: const Icon(Icons.add)),
+                                        onPressed: () {
+                                          Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      SessionCalendar(
+                                                          user: user,
+                                                          courId:
+                                                              cours.courId)));
+                                        },
+                                        icon: const Icon(Icons.more_horiz)),
                                   ],
                                 ),
                               ],
@@ -122,7 +132,6 @@ class _CoursState extends State<CoursPage> {
                       ],
                     ),
                   );
-
                 }).toList(),
               ),
             ),

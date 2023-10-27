@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:gestion_school_odc/home/homePage.dart';
 import 'package:gestion_school_odc/register/api.dart';
+import 'package:gestion_school_odc/widget/sessionDay.dart';
 
 import '../model/user.dart';
 
@@ -19,12 +20,12 @@ class _LoginPageState extends State<LoginPage> {
   bool isConnected = false;
 
   @override
-  void initState()  {
+  void initState() {
     storage.read(key: 'user').then((userJson) {
       if (userJson != null) {
         User user = User.fromJson(jsonDecode(userJson));
         Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => HomePage(user: user)));
+            MaterialPageRoute(builder: (context) => SessionDay(user: user)));
       }
     });
     super.initState();
@@ -179,7 +180,7 @@ class _LoginPageState extends State<LoginPage> {
                       if (result != null) {
                         if (result.role == "Etudiant") {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => HomePage(user: result)));
+                              builder: (context) => SessionDay(user: result)));
                           ScaffoldMessenger.of(context)
                             ..removeCurrentSnackBar()
                             ..showSnackBar(const SnackBar(

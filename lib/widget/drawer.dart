@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:gestion_school_odc/home/homePage.dart';
+import 'package:gestion_school_odc/widget/cours.dart';
 import 'package:gestion_school_odc/widget/loginPage.dart';
 
 import '../model/user.dart';
@@ -96,6 +98,35 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                           IconData(0xe3b3, fontFamily: 'MaterialIcons')),
                       title: const Text(
                         'Deconnexion',
+                        style: TextStyle(fontSize: 18),
+                      ))),
+              Container(
+                  decoration: const BoxDecoration(
+                      border: Border(
+                          bottom: BorderSide(width: 1, color: Colors.black26))),
+                  child: ListTile(
+                      onTap: () async {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => HomePage(user: widget.user),
+                          ),
+                        );
+                      },
+                      leading: const Icon(
+                          IconData(0xe3dd, fontFamily: 'MaterialIcons')),
+                      title: const Text(
+                        'Liste cours',
+                        style: TextStyle(fontSize: 18),
+                      ))),
+              Container(
+                  decoration: const BoxDecoration(
+                      border: Border(
+                          bottom: BorderSide(width: 1, color: Colors.black26))),
+                  child: ListTile(
+                      onTap: () {},
+                      leading: const Icon(Icons.cancel),
+                      title: const Text(
+                        'Liste des absences',
                         style: TextStyle(fontSize: 18),
                       ))),
             ],

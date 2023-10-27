@@ -31,6 +31,7 @@ class Cours {
   final int courId;
   final String semestre;
   final String module;
+  final String photo;
   final String etat;
   final String professeur;
   final List<CoursDetails> coursDetails;
@@ -39,6 +40,7 @@ class Cours {
     required this.courId,
     required this.semestre,
     required this.module,
+    required this.photo,
     required this.etat,
     required this.professeur,
     required this.coursDetails,
@@ -53,6 +55,7 @@ class Cours {
       courId: json['cour_id'],
       semestre: json['semestre'],
       module: json['module'],
+      photo: json['photo'],
       etat: json['etat'],
       professeur: json['professeur'],
       coursDetails: coursDetailsList,
